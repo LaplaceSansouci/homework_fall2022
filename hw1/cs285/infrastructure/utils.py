@@ -27,7 +27,7 @@ def sample_trajectory(env, policy, max_path_length, render=False):
 
         # use the most recent ob to decide what to do
         obs.append(ob)
-        ac = policy.get_action(obs) # HINT: query the policy's get_action function
+        ac = policy.get_action(ob).detach().numpy() # HINT: query the policy's get_action function
         ac = ac[0]
         acs.append(ac)
 
@@ -42,10 +42,7 @@ def sample_trajectory(env, policy, max_path_length, render=False):
         # TODO end the rollout if the rollout ended
         # HINT: rollout can end due to done, or due to max_path_length
 
-        if (done != 0 or steps >= max_path_length):
-            rollout_done = 1
-        else:
-            rollout_done = 0
+        rollout_done = int(done or (steps >= max_path_length))
 
         terminals.append(rollout_done)
 
@@ -67,7 +64,7 @@ def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, r
     while timesteps_this_batch < min_timesteps_per_batch:
 
         path_cur = sample_trajectory(env, policy, max_path_length, render)
-        paths.append[path_cur]
+        paths.append(path_cur)
         timesteps_this_batch = timesteps_this_batch + get_pathlength(path_cur)
 
     return paths, timesteps_this_batch

@@ -82,8 +82,10 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
 
         # TODO return the action that the policy prescribes
 
-        actions = self.forward(obs)
-        
+        observation = ptu.from_numpy(observation)
+
+        actions = self.forward(observation)
+
         return(actions)
 
 
@@ -126,7 +128,8 @@ class MLPPolicySL(MLPPolicy):
         # Zero grad, see https://pytorch.org/docs/stable/optim.html
         self.optimizer.zero_grad()
         proposed_actions = self.get_action(observations)
-        loss = self.loss(torch.tensor(actions, device = ptu.device), proposed_actions)
+        # print(proposed_actions)
+        loss = self.loss(proposed_actions, torch.tensor(actions, device = ptu.device))
         loss.backward()
         self.optimizer.step()
 

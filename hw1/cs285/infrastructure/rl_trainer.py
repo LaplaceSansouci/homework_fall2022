@@ -10,7 +10,7 @@ import torch
 from cs285.infrastructure import pytorch_util as ptu
 from cs285.infrastructure.logger import Logger
 from cs285.infrastructure import utils
-from infrastructure.utils import sample_trajectories, sample_trajectory
+
 
 # how many rollouts to save as videos to tensorboard
 MAX_NVIDEO = 2
@@ -181,7 +181,7 @@ class RL_Trainer(object):
         
         # (2) of hint
         else:
-            paths = sample_trajectories(self.env, collect_policy, int(batch_size // self.params['ep_len']),  self.params['ep_len'])
+            paths = utils.sample_trajectories(self.env, collect_policy, batch_size,  self.params['ep_len'])
             envsteps_this_batch = sum(path['observation'].shape[0] for path in paths)
 
 
