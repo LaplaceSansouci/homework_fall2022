@@ -58,7 +58,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--expert_policy_file', '-epf', type=str, required=True)  # relative to where you're running this script from
     parser.add_argument('--expert_data', '-ed', type=str, required=True) #relative to where you're running this script from
-    parser.add_argument('--env_name', '-env', type=str, help=f'choices: {", ".join(MJ_ENV_NAMES)}', required=True)
+    parser.add_argument('--env_name', '-env', type=str, required=True)
     parser.add_argument('--exp_name', '-exp', type=str, default='pick an experiment name', required=True)
     parser.add_argument('--do_dagger', action='store_true')
     parser.add_argument('--ep_len', type=int)
