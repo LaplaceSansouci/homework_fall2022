@@ -1,5 +1,7 @@
 from collections import OrderedDict
+from operator import le
 import numpy as np
+import pickle
 import time
 
 import gym
@@ -8,6 +10,7 @@ import torch
 from cs285.infrastructure import pytorch_util as ptu
 from cs285.infrastructure.logger import Logger
 from cs285.infrastructure import utils
+from infrastructure.utils import sample_trajectories, sample_trajectory
 
 # how many rollouts to save as videos to tensorboard
 MAX_NVIDEO = 2
@@ -167,8 +170,21 @@ class RL_Trainer(object):
         # TODO collect `batch_size` samples to be used for training
         # HINT1: use sample_trajectories from utils
         # HINT2: you want each of these collected rollouts to be of length self.params['ep_len']
+
+        # (1) of hint
         print("\nCollecting data to be used for training...")
-        paths, envsteps_this_batch = TODO
+
+        if itr == 0:
+            with open(load_initial_expertdata, "rb") as expert_f:
+                loaded_paths = pickle.load(expert_f)
+            return loaded_paths, 0, None
+        
+        # (2) of hint
+        else:
+            paths = sample_trajectories(self.env, collect_policy, int(batch_size // self.params['ep_len']),  self.params['ep_len'])
+            envsteps_this_batch = sum(path['observation'].shape[0] for path in paths)
+
+
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
         # note: here, we collect MAX_NVIDEO rollouts, each of length MAX_VIDEO_LEN
@@ -189,13 +205,17 @@ class RL_Trainer(object):
             # TODO sample some data from the data buffer
             # HINT1: use the agent's sample function
             # HINT2: how much data = self.params['train_batch_size']
-            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = TODO
+
+            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = \
+                self.agent.sample(self.params['train_batch_size'])
 
             # TODO use the sampled data to train an agent
             # HINT: use the agent's train function
             # HINT: keep the agent's training log for debugging
-            train_log = TODO
+
+            train_log = self.agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
             all_logs.append(train_log)
+        
         return all_logs
 
     def do_relabel_with_expert(self, expert_policy, paths):
@@ -204,6 +224,9 @@ class RL_Trainer(object):
         # TODO relabel collected obsevations (from our policy) with labels from an expert policy
         # HINT: query the policy (using the get_action function) with paths[i]["observation"]
         # and replace paths[i]["action"] with these expert labels
+
+        for i in range(len(paths)):
+                paths[i]["action"] = np.array(expert_policy.get_action(paths[i]["observation"]), dtype=np.float32)
 
         return paths
 
